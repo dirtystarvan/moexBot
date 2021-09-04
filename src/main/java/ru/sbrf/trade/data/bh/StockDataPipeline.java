@@ -1,5 +1,6 @@
 package ru.sbrf.trade.data.bh;
 
+import org.springframework.stereotype.Component;
 import ru.sbrf.trade.data.da.DataStorageConnection;
 import ru.sbrf.trade.data.da.StockConnection;
 import ru.sbrf.trade.data.da.entity.ch.MoexDto;

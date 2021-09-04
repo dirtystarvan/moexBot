@@ -1,5 +1,7 @@
 package ru.sbrf.trade.data.da.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.sbrf.trade.data.da.StockConnection;
 import ru.sbrf.trade.data.da.entity.moex.Root;
 import org.apache.http.Header;
@@ -8,8 +10,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 
@@ -37,7 +37,7 @@ public class MoexStockConnectionImpl implements StockConnection {
                 String result = EntityUtils.toString(entity);
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(
-                        DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 dayStat = mapper.readValue(result, Root.class);
             }
             return dayStat;

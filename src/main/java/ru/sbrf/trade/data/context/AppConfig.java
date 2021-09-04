@@ -1,5 +1,7 @@
 package ru.sbrf.trade.data.context;
 
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 import ru.sbrf.trade.data.bh.StockDataPipeline;
 import ru.sbrf.trade.data.da.DataStorageConnection;
 import ru.sbrf.trade.data.da.StockConnection;
@@ -22,6 +24,7 @@ public class AppConfig {
     public StockDataPipeline stockDataPipelineInitMethod() {
         return new StockDataPipeline();
     }
+
     @Bean(name="stockConnection")
     public StockConnection moexStockConnectionImplInitMethod(){
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -31,5 +34,13 @@ public class AppConfig {
     @Bean(name="storageConnection")
     public DataStorageConnection clickhouseDataStorageConnectionImpl() throws SQLException {
         return new FileDataStorageConnectionImpl();
+    }
+
+    @Bean(name = "consumerRestTemplate")
+    public RestTemplate restTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000);
+        factory.setReadTimeout(3000);
+        return new RestTemplate(factory);
     }
 }
