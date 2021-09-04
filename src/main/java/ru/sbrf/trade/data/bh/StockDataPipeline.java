@@ -54,7 +54,7 @@ public class StockDataPipeline {
      * Метод чтения данных с рынка за указанную дату
      * @param date - дата за которую нужно загрузить данные
      * */
-    public String rangePipeline(String date) throws IOException, SQLException {
+    public List<MoexDto> rangePipeline(String date) throws IOException, SQLException {
 
         Root root = stockConnection.downloadMoexDataByDate(date);
         List<MoexDto> list = fromData(root);
@@ -62,6 +62,6 @@ public class StockDataPipeline {
 
         storageConnection.uploadClickhouse(list, fromMeta(root));
 
-        return "200";
+        return list;
     }
 }

@@ -13,12 +13,17 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sbrf.trade.data.bh.StockDataPipeline;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 @Component
 public class BotPolling extends TelegramLongPollingBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(BotPolling.class);
 
     private String botName;
     private String botToken;
+    private StockDataPipeline pipeline;
+    private RestTemplate consumerRest;
 
     public BotPolling(@Value("${telegram.bot.name}") String botName,
                       @Value("${telegram.bot.token}") String botToken,
@@ -26,6 +31,8 @@ public class BotPolling extends TelegramLongPollingBot {
                       @Qualifier("consumerRestTemplate")RestTemplate restTemplate) {
         this.botName = botName;
         this.botToken = botToken;
+        this.pipeline = stockDataPipeline;
+        this.consumerRest = restTemplate;
     }
 
     @Override
@@ -49,14 +56,16 @@ public class BotPolling extends TelegramLongPollingBot {
 
             switch(splitted[0]) {
                 case "t":
-                    execute(new SendMessage(String.valueOf(chatId), splitted[1]));
+                    pipeline.rangePipeline(splitted[1]);
+
+                    execute(new SendMessage(String.valueOf(chatId), "FUCK"));
                     break;
                 case "r":
                     break;
             }
 
             execute(new SendMessage(String.valueOf(chatId), receivedMessage));
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiException | SQLException | IOException e) {
             e.printStackTrace();
         }
     }
