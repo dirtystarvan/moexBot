@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -85,9 +86,12 @@ public class BotPolling extends TelegramLongPollingBot {
             switch(splitted[0]) {
                 case "t":
                     List<MoexDto> bounded = pipeline.rangePipeline(splitted[1]).stream()
-                                    .limit(10).collect(Collectors.toList());
+                                    .limit(5).collect(Collectors.toList());
                     execute(new SendMessage(String.valueOf(chatId), MsgBuilder.getMessage(
                             bounded, splitted[1])));
+//                    template.postForEntity("http://localhost:8080/shares-consumer", quotes, int.class);
+                    ResponseEntity<Integer> restResult = consumerRest.postForEntity("http://localhost:8080/shares-consumer", bounded, Integer.class);
+                    LOGGER.info(restResult.getStatusCode().toString());
                     break;
                 case "r":
                 default:
