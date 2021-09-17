@@ -14,10 +14,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sbrf.trade.data.bh.StockDataPipeline;
 import ru.sbrf.trade.data.da.entity.ch.MoexDto;
+import ru.sbrf.trade.data.da.entity.ch.MoexResultWrapper;
 import ru.sbrf.trade.data.util.MsgBuilder;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -86,12 +88,12 @@ public class BotPolling extends TelegramLongPollingBot {
             switch(splitted[0]) {
                 case "t":
                     List<MoexDto> bounded = pipeline.rangePipeline(splitted[1]).stream()
-                                    .limit(5).collect(Collectors.toList());
-                    execute(new SendMessage(String.valueOf(chatId), MsgBuilder.getMessage(
-                            bounded, splitted[1])));
+                                    .limit(50).collect(Collectors.toList());
+//                    execute(new SendMessage(String.valueOf(chatId), MsgBuilder.getMessage(bounded, splitted[1])));
 //                    template.postForEntity("http://localhost:8080/shares-consumer", quotes, int.class);
-                    ResponseEntity<Integer> restResult = consumerRest.postForEntity("http://localhost:8080/shares-consumer", bounded, Integer.class);
-                    LOGGER.info(restResult.getStatusCode().toString());
+                    ResponseEntity<MoexResultWrapper> restResult =
+                            consumerRest.postForEntity("http://localhost:8080/shares-consumer", bounded, MoexResultWrapper.class);
+                    execute(new SendMessage(String.valueOf(chatId), MsgBuilder.getDayAnalysisMessage(restResult.getBody())));
                     break;
                 case "r":
                 default:
