@@ -19,7 +19,7 @@ public class ClickhouseDataStorageConnectionImpl implements DataStorageConnectio
 
     public void uploadClickhouse(List<MoexDto> moexDto, MoexColumnNameDto moexColumnNameDto) throws SQLException {
         String query =
-                "insert into default.moex_shares (" +
+                "insert into `moex-shares`.moex_shares1 (" +
                         "BOARDID, " +
                         "TRADEDATE, " +
                         "SHORTNAME, " +

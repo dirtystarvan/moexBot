@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sbrf.trade.data.bh.StockDataPipeline;
+import ru.sbrf.trade.data.da.DataStorageConnection;
+import ru.sbrf.trade.data.da.entity.ch.MoexColumnNameDto;
 import ru.sbrf.trade.data.da.entity.ch.MoexDto;
 import ru.sbrf.trade.data.da.entity.ch.MoexResultWrapper;
 import ru.sbrf.trade.data.util.MsgBuilder;
@@ -55,15 +57,18 @@ public class BotPolling extends TelegramLongPollingBot {
     private String botToken;
     private StockDataPipeline pipeline;
     private RestTemplate consumerRest;
+    private DataStorageConnection clickHouse;
 
     public BotPolling(@Value("${telegram.bot.name}") String botName,
                       @Value("${telegram.bot.token}") String botToken,
                       @Qualifier("stockDataPipeline")StockDataPipeline stockDataPipeline,
-                      @Qualifier("consumerRestTemplate")RestTemplate restTemplate) {
+                      @Qualifier("consumerRestTemplate")RestTemplate restTemplate,
+                      @Qualifier("storageConnection")DataStorageConnection clickHouse) {
         this.botName = botName;
         this.botToken = botToken;
         this.pipeline = stockDataPipeline;
         this.consumerRest = restTemplate;
+        this.clickHouse = clickHouse;
     }
 
     @Override
@@ -94,6 +99,9 @@ public class BotPolling extends TelegramLongPollingBot {
                     ResponseEntity<MoexResultWrapper> restResult =
                             consumerRest.postForEntity("http://localhost:8080/shares-consumer", bounded, MoexResultWrapper.class);
                     execute(new SendMessage(String.valueOf(chatId), MsgBuilder.getDayAnalysisMessage(restResult.getBody())));
+                    LOGGER.info("Before clickhouse");
+                    clickHouse.uploadClickhouse(Arrays.asList(restResult.getBody().getGrowthLeaders()), new MoexColumnNameDto());
+                    LOGGER.info("After clickhouse");
                     break;
                 case "r":
                 default:
